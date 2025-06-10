@@ -7,102 +7,167 @@ const Notes = () => {
   const [notes, setNotes] = useState([]);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [category, setCategory] = useState('personal');
   const [error, setError] = useState('');
+  const [editingNoteId, setEditingNoteId] = useState(null);
 
   useEffect(() => {
-    const userNotes = getUserData('notes');
-    setNotes(userNotes);
+    const loadNotes = async () => {
+      if (user) {
+        const userData = await getUserData(user.uid);
+        if (userData && userData.notes) {
+          setNotes(userData.notes);
+        }
+      }
+    };
+    loadNotes();
   }, [user, getUserData]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
     if (!title.trim() || !content.trim()) {
-      setError('Başlık ve içerik alanları zorunludur');
+      setError('Başlık ve içerik alanları zorunludur.');
       return;
     }
 
-    const newNote = {
-      id: Date.now(),
-      title,
-      content,
-      date: new Date().toISOString()
-    };
+    try {
+      const newNote = {
+        id: editingNoteId || Date.now().toString(),
+        title: title.trim(),
+        content: content.trim(),
+        category,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-    const updatedNotes = [newNote, ...notes];
-    setNotes(updatedNotes);
-    saveUserData('notes', updatedNotes);
-    
-    setTitle('');
-    setContent('');
-    setError('');
+      const updatedNotes = editingNoteId
+        ? notes.map((note) => (note.id === editingNoteId ? newNote : note))
+        : [...notes, newNote];
+
+      setNotes(updatedNotes);
+      await saveUserData(user.uid, { notes: updatedNotes });
+
+      setTitle('');
+      setContent('');
+      setCategory('personal');
+      setEditingNoteId(null);
+    } catch (err) {
+      setError('Not kaydedilirken bir hata oluştu.');
+      console.error('Not kaydetme hatası:', err);
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleEdit = (note) => {
+    setTitle(note.title);
+    setContent(note.content);
+    setCategory(note.category);
+    setEditingNoteId(note.id);
+  };
+
+  const handleDelete = async (noteId) => {
     if (window.confirm('Bu notu silmek istediğinizden emin misiniz?')) {
-      const updatedNotes = notes.filter(note => note.id !== id);
-      setNotes(updatedNotes);
-      saveUserData('notes', updatedNotes);
+      try {
+        const updatedNotes = notes.filter((note) => note.id !== noteId);
+        setNotes(updatedNotes);
+        await saveUserData(user.uid, { notes: updatedNotes });
+      } catch (err) {
+        setError('Not silinirken bir hata oluştu.');
+        console.error('Not silme hatası:', err);
+      }
     }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('tr-TR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   return (
     <div className="notes-container">
       <h1>Notlarım</h1>
-      
-      <form onSubmit={handleSubmit} className="notes-form">
-        {error && <div className="error">{error}</div>}
-        
+      {error && <div className="error-message">{error}</div>}
+
+      <form onSubmit={handleSubmit} className="note-form">
         <div className="form-group">
-          <label htmlFor="title">Başlık</label>
           <input
             type="text"
-            id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Not başlığı"
+            className="note-input"
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="content">İçerik</label>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="note-select"
+          >
+            <option value="personal">Kişisel</option>
+            <option value="work">İş</option>
+            <option value="ideas">Fikirler</option>
+            <option value="tasks">Görevler</option>
+          </select>
+        </div>
+
+        <div className="form-group">
           <textarea
-            id="content"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Notunuzu buraya yazın..."
+            className="note-textarea"
             rows="6"
           />
         </div>
 
-        <button type="submit">Kaydet</button>
+        <button type="submit" className="note-submit">
+          {editingNoteId ? 'Notu Güncelle' : 'Not Ekle'}
+        </button>
       </form>
 
       <div className="notes-grid">
-        {notes.map(note => (
-          <div key={note.id} className="note-card">
-            <div className="note-header">
-              <h3>{note.title}</h3>
-              <div className="note-actions">
-                <span className="note-date">
-                  {new Date(note.date).toLocaleDateString('tr-TR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
+        {notes && notes.length > 0 ? (
+          notes.map((note) => (
+            <div key={note.id} className="note-card">
+              <div className="note-header">
+                <h3>{note.title}</h3>
+                <span className={`note-category ${note.category}`}>
+                  {note.category}
                 </span>
-                <button
-                  onClick={() => handleDelete(note.id)}
-                  className="delete-btn"
-                >
-                  Sil
-                </button>
+              </div>
+              <p className="note-content">{note.content}</p>
+              <div className="note-footer">
+                <span className="note-date">
+                  {formatDate(note.updatedAt)}
+                </span>
+                <div className="note-actions">
+                  <button
+                    onClick={() => handleEdit(note)}
+                    className="note-edit"
+                  >
+                    Düzenle
+                  </button>
+                  <button
+                    onClick={() => handleDelete(note.id)}
+                    className="note-delete"
+                  >
+                    Sil
+                  </button>
+                </div>
               </div>
             </div>
-            <p className="note-content">{note.content}</p>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="no-notes">Henüz not eklenmemiş.</p>
+        )}
       </div>
     </div>
   );

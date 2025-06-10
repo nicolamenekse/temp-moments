@@ -7,115 +7,134 @@ const Diary = () => {
   const [entries, setEntries] = useState([]);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [mood, setMood] = useState('normal');
+  const [mood, setMood] = useState('happy');
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const userEntries = getUserData('diary');
-    setEntries(userEntries);
+    const loadEntries = async () => {
+      if (user) {
+        const userData = await getUserData(user.uid);
+        if (userData && userData.diaryEntries) {
+          setEntries(userData.diaryEntries);
+        }
+      }
+    };
+    loadEntries();
   }, [user, getUserData]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+
     if (!title.trim() || !content.trim()) {
-      setError('Başlık ve içerik alanları zorunludur');
+      setError('Başlık ve içerik alanları zorunludur.');
       return;
     }
 
-    const newEntry = {
-      id: Date.now(),
-      title,
-      content,
-      mood,
-      date: new Date().toISOString()
-    };
+    try {
+      const newEntry = {
+        id: Date.now().toString(),
+        title: title.trim(),
+        content: content.trim(),
+        mood,
+        date: new Date().toISOString(),
+      };
 
-    const updatedEntries = [newEntry, ...entries];
-    setEntries(updatedEntries);
-    saveUserData('diary', updatedEntries);
-    
-    setTitle('');
-    setContent('');
-    setMood('normal');
-    setError('');
+      const updatedEntries = [newEntry, ...entries];
+      setEntries(updatedEntries);
+      await saveUserData(user.uid, { diaryEntries: updatedEntries });
+
+      setTitle('');
+      setContent('');
+      setMood('happy');
+    } catch (err) {
+      setError('Günlük kaydedilirken bir hata oluştu.');
+      console.error('Günlük kaydetme hatası:', err);
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Bu günlük girişini silmek istediğinizden emin misiniz?')) {
-      const updatedEntries = entries.filter(entry => entry.id !== id);
-      setEntries(updatedEntries);
-      saveUserData('diary', updatedEntries);
+      try {
+        const updatedEntries = entries.filter(entry => entry.id !== id);
+        setEntries(updatedEntries);
+        await saveUserData(user.uid, { diaryEntries: updatedEntries });
+      } catch (err) {
+        setError('Günlük silinirken bir hata oluştu.');
+        console.error('Günlük silme hatası:', err);
+      }
     }
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('tr-TR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
   return (
     <div className="diary-container">
       <h1>Günlüğüm</h1>
-      
+      {error && <div className="error-message">{error}</div>}
+
       <form onSubmit={handleSubmit} className="diary-form">
-        {error && <div className="error">{error}</div>}
-        
         <div className="form-group">
-          <label htmlFor="title">Başlık</label>
           <input
             type="text"
-            id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Günlük başlığı"
+            className="diary-input"
           />
         </div>
 
         <div className="form-group">
-          <label htmlFor="mood">Ruh Hali</label>
           <select
-            id="mood"
             value={mood}
             onChange={(e) => setMood(e.target.value)}
+            className="diary-select"
           >
             <option value="happy">Mutlu</option>
-            <option value="normal">Normal</option>
             <option value="sad">Üzgün</option>
-            <option value="excited">Heyecanlı</option>
             <option value="angry">Kızgın</option>
+            <option value="excited">Heyecanlı</option>
+            <option value="calm">Sakin</option>
           </select>
         </div>
 
         <div className="form-group">
-          <label htmlFor="content">İçerik</label>
           <textarea
-            id="content"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Bugün neler yaşadın?"
+            className="diary-textarea"
             rows="6"
           />
         </div>
 
-        <button type="submit">Kaydet</button>
+        <button type="submit" className="diary-submit">
+          Kaydet
+        </button>
       </form>
 
-      <div className="entries-container">
-        {entries.map(entry => (
-          <div key={entry.id} className="diary-entry">
-            <div className="entry-header">
-              <h3>{entry.title}</h3>
-              <div className="entry-meta">
-                <span className={`mood ${entry.mood}`}>
-                  {entry.mood === 'happy' && '😊'}
-                  {entry.mood === 'normal' && '😐'}
-                  {entry.mood === 'sad' && '😢'}
-                  {entry.mood === 'excited' && '🤩'}
-                  {entry.mood === 'angry' && '😠'}
+      <div className="diary-entries">
+        {entries && entries.length > 0 ? (
+          entries.map(entry => (
+            <div key={entry.id} className="diary-entry">
+              <div className="entry-header">
+                <h3>{entry.title}</h3>
+                <span className={`mood-indicator ${entry.mood}`}>
+                  {entry.mood}
                 </span>
-                <span className="date">
-                  {new Date(entry.date).toLocaleDateString('tr-TR', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
+              </div>
+              <p className="entry-content">{entry.content}</p>
+              <div className="entry-footer">
+                <span className="entry-date">
+                  {formatDate(entry.date)}
                 </span>
                 <button
                   onClick={() => handleDelete(entry.id)}
@@ -125,9 +144,10 @@ const Diary = () => {
                 </button>
               </div>
             </div>
-            <p className="entry-content">{entry.content}</p>
-          </div>
-        ))}
+          ))
+        ) : (
+          <p className="no-entries">Henüz günlük girişi yok.</p>
+        )}
       </div>
     </div>
   );
