@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
 import Diary from './pages/Diary';
 import Notes from './pages/Notes';
+import Photos from './pages/Photos';
 import './App.css';
 
 function App() {
@@ -26,7 +27,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/diary" element={<Diary />} />
             <Route path="/notes" element={<Notes />} />
-            <Route path="/photos" element={<div>Fotoğraflar Sayfası (Yapım aşamasında)</div>} />
+            <Route path="/photos" element={<Photos />} />
           </Routes>
         </main>
 
