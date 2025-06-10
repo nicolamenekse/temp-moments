@@ -15,6 +15,20 @@ const Photos = () => {
     localStorage.setItem('photos', JSON.stringify(photos));
   }, [photos]);
 
+  const formatDate = (date) => {
+    return date.toLocaleDateString('tr-TR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const generatePhotoTitle = (date) => {
+    return `Anı - ${formatDate(date)}`;
+  };
+
   const handleFileSelect = (event) => {
     const files = Array.from(event.target.files);
     setIsUploading(true);
@@ -24,17 +38,18 @@ const Photos = () => {
       const reader = new FileReader();
       
       reader.onload = (e) => {
+        const now = new Date();
         const newPhoto = {
           id: Date.now() + index,
           url: e.target.result,
-          title: file.name,
-          date: new Date().toLocaleDateString('tr-TR'),
+          title: generatePhotoTitle(now),
+          date: formatDate(now),
           description: '',
+          originalName: file.name // Orijinal dosya adını saklayalım
         };
 
         setPhotos(prevPhotos => [newPhoto, ...prevPhotos]);
         
-        // Yükleme simülasyonu
         const progress = ((index + 1) / files.length) * 100;
         setUploadProgress(progress);
         
@@ -68,6 +83,12 @@ const Photos = () => {
   const handleDescriptionChange = (id, description) => {
     setPhotos(photos.map(photo => 
       photo.id === id ? { ...photo, description } : photo
+    ));
+  };
+
+  const handleTitleChange = (id, newTitle) => {
+    setPhotos(photos.map(photo => 
+      photo.id === id ? { ...photo, title: newTitle } : photo
     ));
   };
 
@@ -108,7 +129,13 @@ const Photos = () => {
                 <img src={photo.url} alt={photo.title} />
               </div>
               <div className="photo-info">
-                <h3>{photo.title}</h3>
+                <input
+                  type="text"
+                  className="photo-title-input"
+                  value={photo.title}
+                  onChange={(e) => handleTitleChange(photo.id, e.target.value)}
+                  placeholder="Fotoğraf başlığı"
+                />
                 <p className="photo-date">{photo.date}</p>
                 <textarea
                   className="photo-description"
@@ -135,7 +162,13 @@ const Photos = () => {
             <button className="close-button" onClick={handleCloseModal}>×</button>
             <img src={selectedPhoto.url} alt={selectedPhoto.title} />
             <div className="modal-info">
-              <h2>{selectedPhoto.title}</h2>
+              <input
+                type="text"
+                className="modal-title-input"
+                value={selectedPhoto.title}
+                onChange={(e) => handleTitleChange(selectedPhoto.id, e.target.value)}
+                placeholder="Fotoğraf başlığı"
+              />
               <p className="modal-date">{selectedPhoto.date}</p>
               {selectedPhoto.description && (
                 <p className="modal-description">{selectedPhoto.description}</p>
