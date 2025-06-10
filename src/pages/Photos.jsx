@@ -1,74 +1,67 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import '../styles/Photos.css';
 
 const Photos = () => {
-  const [photos, setPhotos] = useState(() => {
-    const savedPhotos = localStorage.getItem('photos');
-    return savedPhotos ? JSON.parse(savedPhotos) : [];
-  });
-
+  const { user, saveUserData, getUserData } = useAuth();
+  const [photos, setPhotos] = useState([]);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState('');
   const [uploadProgress, setUploadProgress] = useState(0);
 
   useEffect(() => {
-    localStorage.setItem('photos', JSON.stringify(photos));
-  }, [photos]);
+    const userPhotos = getUserData('photos');
+    setPhotos(userPhotos);
+  }, [user, getUserData]);
 
-  const formatDate = (date) => {
-    return date.toLocaleDateString('tr-TR', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
+  const handleFileSelect = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.type.startsWith('image/')) {
+        setUploadStatus('Yükleniyor...');
+        setUploadProgress(0);
 
-  const generatePhotoTitle = (date) => {
-    return `Anı - ${formatDate(date)}`;
-  };
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const newPhoto = {
+            id: Date.now(),
+            url: event.target.result,
+            title: file.name,
+            date: new Date().toISOString(),
+            description: ''
+          };
 
-  const handleFileSelect = (event) => {
-    const files = Array.from(event.target.files);
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    files.forEach((file, index) => {
-      const reader = new FileReader();
-      
-      reader.onload = (e) => {
-        const now = new Date();
-        const newPhoto = {
-          id: Date.now() + index,
-          url: e.target.result,
-          title: generatePhotoTitle(now),
-          date: formatDate(now),
-          description: '',
-          originalName: file.name // Orijinal dosya adını saklayalım
+          const updatedPhotos = [newPhoto, ...photos];
+          setPhotos(updatedPhotos);
+          saveUserData('photos', updatedPhotos);
+          
+          setUploadStatus('Yüklendi!');
+          setUploadProgress(100);
+          setTimeout(() => {
+            setUploadStatus('');
+            setUploadProgress(0);
+          }, 2000);
         };
 
-        setPhotos(prevPhotos => [newPhoto, ...prevPhotos]);
-        
-        const progress = ((index + 1) / files.length) * 100;
-        setUploadProgress(progress);
-        
-        if (index === files.length - 1) {
-          setIsUploading(false);
-          setUploadProgress(0);
-        }
-      };
+        reader.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const progress = (event.loaded / event.total) * 100;
+            setUploadProgress(progress);
+          }
+        };
 
-      reader.readAsDataURL(file);
-    });
+        reader.readAsDataURL(file);
+      } else {
+        setUploadStatus('Lütfen geçerli bir resim dosyası seçin');
+      }
+    }
   };
 
   const handleDelete = (id) => {
     if (window.confirm('Bu fotoğrafı silmek istediğinizden emin misiniz?')) {
-      setPhotos(photos.filter(photo => photo.id !== id));
-      if (selectedPhoto?.id === id) {
-        setSelectedPhoto(null);
-      }
+      const updatedPhotos = photos.filter(photo => photo.id !== id);
+      setPhotos(updatedPhotos);
+      saveUserData('photos', updatedPhotos);
     }
   };
 
@@ -80,16 +73,12 @@ const Photos = () => {
     setSelectedPhoto(null);
   };
 
-  const handleDescriptionChange = (id, description) => {
-    setPhotos(photos.map(photo => 
-      photo.id === id ? { ...photo, description } : photo
-    ));
-  };
-
-  const handleTitleChange = (id, newTitle) => {
-    setPhotos(photos.map(photo => 
-      photo.id === id ? { ...photo, title: newTitle } : photo
-    ));
+  const handleDescriptionChange = (id, newDescription) => {
+    const updatedPhotos = photos.map(photo =>
+      photo.id === id ? { ...photo, description: newDescription } : photo
+    );
+    setPhotos(updatedPhotos);
+    saveUserData('photos', updatedPhotos);
   };
 
   return (
@@ -97,82 +86,81 @@ const Photos = () => {
       <h1>Fotoğraflarım</h1>
 
       <div className="upload-section">
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileSelect}
+          id="photo-upload"
+          className="file-input"
+        />
         <label htmlFor="photo-upload" className="upload-button">
           Fotoğraf Yükle
-          <input
-            id="photo-upload"
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileSelect}
-            style={{ display: 'none' }}
-          />
         </label>
-        {isUploading && (
-          <div className="upload-progress">
-            <div 
-              className="progress-bar"
-              style={{ width: `${uploadProgress}%` }}
-            ></div>
-            <span>Yükleniyor... {Math.round(uploadProgress)}%</span>
+        {uploadStatus && (
+          <div className="upload-status">
+            <div className="progress-bar">
+              <div
+                className="progress"
+                style={{ width: `${uploadProgress}%` }}
+              ></div>
+            </div>
+            <span>{uploadStatus}</span>
           </div>
         )}
       </div>
 
       <div className="gallery">
-        {photos.length === 0 ? (
-          <p className="no-photos">Henüz fotoğraf yüklenmemiş.</p>
-        ) : (
-          photos.map((photo) => (
-            <div key={photo.id} className="photo-card">
-              <div className="photo-image" onClick={() => handlePhotoClick(photo)}>
-                <img src={photo.url} alt={photo.title} />
-              </div>
-              <div className="photo-info">
-                <input
-                  type="text"
-                  className="photo-title-input"
-                  value={photo.title}
-                  onChange={(e) => handleTitleChange(photo.id, e.target.value)}
-                  placeholder="Fotoğraf başlığı"
-                />
-                <p className="photo-date">{photo.date}</p>
-                <textarea
-                  className="photo-description"
-                  placeholder="Fotoğraf açıklaması ekle..."
-                  value={photo.description}
-                  onChange={(e) => handleDescriptionChange(photo.id, e.target.value)}
-                />
-                <button
-                  onClick={() => handleDelete(photo.id)}
-                  className="delete-button"
-                  title="Fotoğrafı Sil"
-                >
-                  🗑️
-                </button>
-              </div>
+        {photos.map(photo => (
+          <div key={photo.id} className="photo-card">
+            <img
+              src={photo.url}
+              alt={photo.title}
+              onClick={() => handlePhotoClick(photo)}
+            />
+            <div className="photo-info">
+              <h3>{photo.title}</h3>
+              <p className="photo-date">
+                {new Date(photo.date).toLocaleDateString('tr-TR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </p>
+              <button
+                onClick={() => handleDelete(photo.id)}
+                className="delete-btn"
+              >
+                Sil
+              </button>
             </div>
-          ))
-        )}
+          </div>
+        ))}
       </div>
 
       {selectedPhoto && (
-        <div className="photo-modal" onClick={handleCloseModal}>
+        <div className="modal" onClick={handleCloseModal}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <button className="close-button" onClick={handleCloseModal}>×</button>
+            <button className="close-btn" onClick={handleCloseModal}>
+              ×
+            </button>
             <img src={selectedPhoto.url} alt={selectedPhoto.title} />
             <div className="modal-info">
-              <input
-                type="text"
-                className="modal-title-input"
-                value={selectedPhoto.title}
-                onChange={(e) => handleTitleChange(selectedPhoto.id, e.target.value)}
-                placeholder="Fotoğraf başlığı"
+              <h2>{selectedPhoto.title}</h2>
+              <p className="modal-date">
+                {new Date(selectedPhoto.date).toLocaleDateString('tr-TR', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </p>
+              <textarea
+                value={selectedPhoto.description}
+                onChange={(e) => handleDescriptionChange(selectedPhoto.id, e.target.value)}
+                placeholder="Fotoğraf açıklaması ekle..."
+                rows="3"
               />
-              <p className="modal-date">{selectedPhoto.date}</p>
-              {selectedPhoto.description && (
-                <p className="modal-description">{selectedPhoto.description}</p>
-              )}
             </div>
           </div>
         </div>

@@ -1,156 +1,200 @@
 .diary-container {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
 }
 
 .diary-container h1 {
+  color: var(--text-color);
   text-align: center;
-  color: #2c3e50;
   margin-bottom: 2rem;
+  font-size: 2.5rem;
+  font-weight: 600;
+  position: relative;
+  padding-bottom: 1rem;
 }
 
-.diary-form-container {
-  background: white;
-  padding: 2rem;
-  border-radius: 15px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  margin-bottom: 2rem;
+.diary-container h1::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 4px;
+  background: linear-gradient(to right, #ff9a9e, #fad0c4);
+  border-radius: 2px;
 }
 
 .diary-form {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  background: var(--surface-color);
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: var(--shadow-medium);
+  margin-bottom: 3rem;
+  border: 1px solid rgba(255, 154, 158, 0.2);
 }
 
 .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  margin-bottom: 1.5rem;
 }
 
-.form-input,
-.form-textarea,
-.form-select {
-  padding: 0.8rem;
-  border: 1px solid #ddd;
-  border-radius: 8px;
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #fad0c4;
+  border-radius: 12px;
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  transition: all 0.3s ease;
+  background-color: rgba(255, 255, 255, 0.9);
 }
 
-.form-input:focus,
-.form-textarea:focus,
-.form-select:focus {
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
   outline: none;
-  border-color: #3498db;
+  border-color: #ff9a9e;
+  box-shadow: 0 0 0 3px rgba(255, 154, 158, 0.2);
 }
 
-.form-textarea {
+.form-group textarea {
   min-height: 150px;
   resize: vertical;
 }
 
-.error {
-  color: #e74c3c;
-  font-size: 0.9rem;
-  margin-top: 0.3rem;
-}
-
-.submit-button {
-  background: #3498db;
+.diary-form button {
+  background: linear-gradient(to right, #ff9a9e, #fad0c4);
   color: white;
-  padding: 1rem;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
+  width: 100%;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
-.submit-button:hover {
-  background: #2980b9;
+.diary-form button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 154, 158, 0.3);
 }
 
 .entries-container {
-  margin-top: 3rem;
+  display: grid;
+  gap: 2rem;
 }
 
-.entries-container h2 {
-  color: #2c3e50;
-  margin-bottom: 1.5rem;
-}
-
-.entry-card {
-  background: white;
+.diary-entry {
+  background: var(--surface-color);
+  border-radius: 16px;
   padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  margin-bottom: 1rem;
-  transition: transform 0.3s ease;
+  box-shadow: var(--shadow-medium);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 154, 158, 0.2);
+  position: relative;
+  overflow: hidden;
 }
 
-.entry-card:hover {
-  transform: translateY(-2px);
+.diary-entry::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(to bottom, #ff9a9e, #fad0c4);
+}
+
+.diary-entry:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-large);
 }
 
 .entry-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 1rem;
 }
 
 .entry-header h3 {
-  color: #2c3e50;
+  color: var(--text-color);
+  font-size: 1.4rem;
+  font-weight: 600;
   margin: 0;
 }
 
-.entry-actions {
+.entry-meta {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
 
-.entry-date {
-  color: #7f8c8d;
+.mood {
+  font-size: 1.5rem;
+  padding: 0.5rem;
+  border-radius: 50%;
+  background: rgba(255, 154, 158, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+}
+
+.date {
+  color: var(--text-secondary-color);
   font-size: 0.9rem;
+}
+
+.delete-btn {
+  background: transparent;
+  color: #ff6b6b;
+  border: 2px solid #ff6b6b;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+  background: #ff6b6b;
+  color: white;
 }
 
 .entry-content {
-  color: #34495e;
+  color: var(--text-color);
   line-height: 1.6;
-  margin-bottom: 1rem;
-  white-space: pre-wrap;
-}
-
-.entry-mood {
-  color: #7f8c8d;
-  font-size: 0.9rem;
-}
-
-.delete-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.2rem;
-  padding: 0.3rem;
-  transition: transform 0.2s ease;
-}
-
-.delete-button:hover {
-  transform: scale(1.1);
-}
-
-.no-entries {
-  text-align: center;
-  color: #7f8c8d;
   font-size: 1.1rem;
-  padding: 2rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  white-space: pre-wrap;
+  margin: 0;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+}
+
+.error {
+  background-color: rgba(255, 107, 107, 0.1);
+  color: #ff6b6b;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  border: 1px solid rgba(255, 107, 107, 0.2);
 }
 
 @media (max-width: 768px) {
@@ -158,18 +202,38 @@
     padding: 1rem;
   }
 
-  .diary-form-container {
+  .diary-form {
     padding: 1.5rem;
   }
 
   .entry-header {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
+    gap: 1rem;
   }
 
-  .entry-actions {
+  .entry-meta {
     width: 100%;
     justify-content: space-between;
   }
+}
+
+/* Mood-specific styles */
+.mood.happy {
+  background: rgba(255, 223, 186, 0.2);
+}
+
+.mood.normal {
+  background: rgba(186, 223, 255, 0.2);
+}
+
+.mood.sad {
+  background: rgba(186, 186, 255, 0.2);
+}
+
+.mood.excited {
+  background: rgba(255, 186, 186, 0.2);
+}
+
+.mood.angry {
+  background: rgba(255, 186, 223, 0.2);
 } 

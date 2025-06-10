@@ -17,13 +17,18 @@ export const AuthProvider = ({ children }) => {
   }, [user]);
 
   const login = (email, password) => {
-    // Normalde burada bir API çağrısı yapılır
-    // Şimdilik basit bir kontrol yapıyoruz
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     const foundUser = users.find(u => u.email === email && u.password === password);
     
     if (foundUser) {
-      setUser(foundUser);
+      // Kullanıcı verilerini yükle
+      const userData = {
+        ...foundUser,
+        diary: JSON.parse(localStorage.getItem(`diary_${foundUser.id}`) || '[]'),
+        notes: JSON.parse(localStorage.getItem(`notes_${foundUser.id}`) || '[]'),
+        photos: JSON.parse(localStorage.getItem(`photos_${foundUser.id}`) || '[]')
+      };
+      setUser(userData);
       return { success: true };
     }
     return { success: false, error: 'E-posta veya şifre hatalı' };
@@ -32,7 +37,6 @@ export const AuthProvider = ({ children }) => {
   const register = (name, email, password) => {
     const users = JSON.parse(localStorage.getItem('users') || '[]');
     
-    // E-posta kontrolü
     if (users.some(u => u.email === email)) {
       return { success: false, error: 'Bu e-posta adresi zaten kullanılıyor' };
     }
@@ -47,6 +51,12 @@ export const AuthProvider = ({ children }) => {
 
     users.push(newUser);
     localStorage.setItem('users', JSON.stringify(users));
+    
+    // Yeni kullanıcı için boş veri yapıları oluştur
+    localStorage.setItem(`diary_${newUser.id}`, JSON.stringify([]));
+    localStorage.setItem(`notes_${newUser.id}`, JSON.stringify([]));
+    localStorage.setItem(`photos_${newUser.id}`, JSON.stringify([]));
+
     setUser(newUser);
     return { success: true };
   };
@@ -55,8 +65,32 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const saveUserData = (dataType, data) => {
+    if (user) {
+      localStorage.setItem(`${dataType}_${user.id}`, JSON.stringify(data));
+      setUser(prev => ({
+        ...prev,
+        [dataType]: data
+      }));
+    }
+  };
+
+  const getUserData = (dataType) => {
+    if (user) {
+      return JSON.parse(localStorage.getItem(`${dataType}_${user.id}`) || '[]');
+    }
+    return [];
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      login, 
+      register, 
+      logout,
+      saveUserData,
+      getUserData
+    }}>
       {children}
     </AuthContext.Provider>
   );
