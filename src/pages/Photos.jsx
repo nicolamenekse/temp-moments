@@ -113,9 +113,9 @@ const Photos = () => {
     setIsEditing(true);
   };
 
-  const handleSaveEdit = () => {
-    setPhotos((prev) =>
-      prev.map((photo) =>
+  const handleSaveEdit = async () => {
+    try {
+      const updatedPhotos = photos.map((photo) =>
         photo.id === selectedPhoto.id
           ? {
               ...photo,
@@ -123,14 +123,20 @@ const Photos = () => {
               description: editForm.description
             }
           : photo
-      )
-    );
-    setSelectedPhoto((prev) => ({
-      ...prev,
-      title: editForm.title,
-      description: editForm.description
-    }));
-    setIsEditing(false);
+      );
+
+      setPhotos(updatedPhotos);
+      setSelectedPhoto((prev) => ({
+        ...prev,
+        title: editForm.title,
+        description: editForm.description
+      }));
+      await saveUserData(user.uid, { photos: updatedPhotos });
+      setIsEditing(false);
+    } catch (err) {
+      setError('Düzenleme kaydedilirken bir hata oluştu.');
+      console.error('Düzenleme kaydetme hatası:', err);
+    }
   };
 
   const handleCancelEdit = () => {
@@ -237,16 +243,43 @@ const Photos = () => {
             </button>
             <img src={selectedPhoto.url} alt={selectedPhoto.title} />
             <div className="modal-info">
-              <h2>{selectedPhoto.title}</h2>
-              <span className="modal-date">
-                {formatDate(selectedPhoto.date)}
-              </span>
-              <textarea
-                value={selectedPhoto.description}
-                onChange={handleDescriptionChange}
-                placeholder="Fotoğraf açıklaması ekle..."
-                className="photo-description"
-              />
+              {isEditing ? (
+                <div className="edit-form">
+                  <input
+                    type="text"
+                    value={editForm.title}
+                    onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                    className="edit-input"
+                    placeholder="Başlık"
+                  />
+                  <textarea
+                    value={editForm.description}
+                    onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                    placeholder="Açıklama"
+                    className="edit-textarea"
+                  />
+                  <div className="edit-buttons">
+                    <button onClick={handleSaveEdit} className="save-btn">Kaydet</button>
+                    <button onClick={handleCancelEdit} className="cancel-btn">İptal</button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <h2>{selectedPhoto.title}</h2>
+                  <span className="modal-date">
+                    {formatDate(selectedPhoto.date)}
+                  </span>
+                  <textarea
+                    value={selectedPhoto.description}
+                    onChange={handleDescriptionChange}
+                    placeholder="Fotoğraf açıklaması ekle..."
+                    className="photo-description"
+                  />
+                  <button onClick={handleEdit} className="edit-btn">
+                    Düzenle
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
