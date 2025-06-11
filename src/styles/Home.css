@@ -2,60 +2,71 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
 .home-header {
   text-align: center;
   margin-bottom: 3rem;
+  padding: 2rem 0;
 }
 
 .home-header h1 {
-  font-size: 3rem;
-  color: #2c3e50;
+  font-size: 2.5rem;
+  color: #1877f2;
   margin-bottom: 1rem;
+  font-weight: 700;
 }
 
 .home-header p {
-  font-size: 1.2rem;
-  color: #7f8c8d;
+  font-size: 1.1rem;
+  color: #65676b;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .features-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 2rem;
+  gap: 1.5rem;
   padding: 1rem;
 }
 
 .feature-card {
   background: white;
-  border-radius: 15px;
-  padding: 2rem;
-  text-align: center;
+  border-radius: 8px;
+  padding: 1.5rem;
   text-decoration: none;
   color: inherit;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e4e6eb;
 }
 
 .feature-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-color: #1877f2;
 }
 
 .feature-icon {
-  font-size: 3rem;
+  font-size: 2.5rem;
   margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .feature-card h2 {
-  color: #2c3e50;
+  font-size: 1.25rem;
+  color: #1c1e21;
   margin-bottom: 0.5rem;
+  font-weight: 600;
 }
 
 .feature-card p {
-  color: #7f8c8d;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
+  color: #65676b;
   line-height: 1.4;
 }
 
@@ -63,12 +74,12 @@
   .home-container {
     padding: 1rem;
   }
-
-  .home-header h1 {
-    font-size: 2rem;
-  }
-
+  
   .features-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .home-header h1 {
+    font-size: 2rem;
   }
 } 
