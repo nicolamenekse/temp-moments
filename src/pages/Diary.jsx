@@ -98,11 +98,11 @@ const Diary = () => {
             onChange={(e) => setMood(e.target.value)}
             className="diary-select"
           >
-            <option value="happy">Mutlu</option>
-            <option value="sad">Üzgün</option>
-            <option value="angry">Kızgın</option>
-            <option value="excited">Heyecanlı</option>
-            <option value="calm">Sakin</option>
+            <option value="mutlu">Mutlu</option>
+            <option value="üzgün">Üzgün</option>
+            <option value="kızgın">Kızgın</option>
+            <option value="heyecanlı">Heyecanlı</option>
+            <option value="sakin">Sakin</option>
           </select>
         </div>
 
@@ -128,7 +128,11 @@ const Diary = () => {
               <div className="entry-header">
                 <h3>{entry.title}</h3>
                 <span className={`mood-indicator ${entry.mood}`}>
-                  {entry.mood}
+                  {entry.mood === 'mutlu' && 'Mutlu'}
+                  {entry.mood === 'üzgün' && 'Üzgün'}
+                  {entry.mood === 'kızgın' && 'Kızgın'}
+                  {entry.mood === 'heyecanlı' && 'Heyecanlı'}
+                  {entry.mood === 'sakin' && 'Sakin'}
                 </span>
               </div>
               <p className="entry-content">{entry.content}</p>

@@ -141,27 +141,27 @@
   text-transform: capitalize;
 }
 
-.mood-indicator.happy {
+.mood-indicator.mutlu {
   background: rgba(46, 213, 115, 0.1);
   color: #2ed573;
 }
 
-.mood-indicator.sad {
+.mood-indicator.üzgün {
   background: rgba(255, 71, 87, 0.1);
   color: #ff4757;
 }
 
-.mood-indicator.angry {
+.mood-indicator.kızgın {
   background: rgba(255, 107, 129, 0.1);
   color: #ff6b81;
 }
 
-.mood-indicator.excited {
+.mood-indicator.heyecanlı {
   background: rgba(255, 159, 67, 0.1);
   color: #ff9f43;
 }
 
-.mood-indicator.calm {
+.mood-indicator.sakin {
   background: rgba(45, 152, 218, 0.1);
   color: #2d98da;
 }

@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import '../styles/Notes.css';
 
+const categoryLabels = {
+  personal: 'Kişisel',
+  work: 'İş',
+  ideas: 'Fikirler',
+  tasks: 'Görevler'
+};
+
 const Notes = () => {
   const { user, saveUserData, getUserData } = useAuth();
   const [notes, setNotes] = useState([]);
@@ -140,7 +147,7 @@ const Notes = () => {
               <div className="note-header">
                 <h3>{note.title}</h3>
                 <span className={`note-category ${note.category}`}>
-                  {note.category}
+                  {categoryLabels[note.category]}
                 </span>
               </div>
               <p className="note-content">{note.content}</p>
