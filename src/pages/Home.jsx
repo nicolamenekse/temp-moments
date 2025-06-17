@@ -11,12 +11,12 @@ const Home = () => {
   const [weeklyProgress, setWeeklyProgress] = useState([]);
 
   const predefinedTasks = [
-    { id: 'exercise', name: 'Egzersiz Yap', icon: '💪', points: 10 },
-    { id: 'water', name: 'Su İç (8 bardak)', icon: '💧', points: 5 },
-    { id: 'reading', name: 'Yazılım Çalış', icon: '📚', points: 15 },
-    { id: 'meditation', name: 'Meditasyon', icon: '🧘‍♀️', points: 10 },
-    { id: 'healthy_meal', name: 'Sağlıklı Beslen', icon: '🥗', points: 8 },
-    { id: 'sleep', name: 'Erken Uyu', icon: '😴', points: 12 },
+    { id: 'exercise', name: 'Egzersiz Yap', icon: '💪', points: 15 },
+    { id: 'water', name: 'Su İç (8 bardak)', icon: '💧', points: 10 },
+    { id: 'reading', name: 'Yazılım Çalış', icon: '📚', points: 25 },
+    { id: 'meditation', name: 'Meditasyon', icon: '🧘‍♀️', points: 15 },
+    { id: 'healthy_meal', name: 'Sağlıklı Beslen', icon: '🥗', points: 15 },
+    { id: 'sleep', name: 'Erken Uyu', icon: '😴', points: 20 },
   ];
 
   useEffect(() => {
