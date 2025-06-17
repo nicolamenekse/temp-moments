@@ -29,13 +29,23 @@ const Home = () => {
 
   const loadDailyTasks = async () => {
     if (user) {
-      const userData = await getUserData(user.uid);
-      const today = new Date().toISOString().split('T')[0];
-      
-      if (userData && userData.dailyTasks) {
-        setDailyTasks(userData.dailyTasks[today] || {});
-        calculateStreak(userData.dailyTasks);
-        calculateWeeklyProgress(userData.dailyTasks);
+      try {
+        const userData = await getUserData(user.uid);
+        const today = new Date().toISOString().split('T')[0];
+        
+        if (userData) {
+          // Ensure dailyTasks exists and is an object
+          const dailyTasksData = userData.dailyTasks || {};
+          setDailyTasks(dailyTasksData[today] || {});
+          calculateStreak(dailyTasksData);
+          calculateWeeklyProgress(dailyTasksData);
+        }
+      } catch (error) {
+        console.error('Error loading daily tasks:', error);
+        // Set default values on error
+        setDailyTasks({});
+        setStreak(0);
+        setWeeklyProgress([]);
       }
     }
   };
@@ -88,29 +98,42 @@ const Home = () => {
   };
 
   const toggleTask = async (taskId) => {
-    const today = new Date().toISOString().split('T')[0];
-    const newDailyTasks = {
-      ...dailyTasks,
-      [taskId]: !dailyTasks[taskId]
-    };
-    
-    setDailyTasks(newDailyTasks);
-    
-    // Save to user data
-    const userData = await getUserData(user.uid);
-    const updatedUserData = {
-      ...userData,
-      dailyTasks: {
-        ...userData.dailyTasks,
-        [today]: newDailyTasks
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const newDailyTasks = {
+        ...dailyTasks,
+        [taskId]: !dailyTasks[taskId]
+      };
+      
+      // Update UI immediately for better UX
+      setDailyTasks(newDailyTasks);
+      
+      // Save to user data
+      const userData = await getUserData(user.uid);
+      const updatedUserData = {
+        ...userData,
+        dailyTasks: {
+          ...userData.dailyTasks,
+          [today]: newDailyTasks
+        }
+      };
+      
+      const saveSuccess = await saveUserData(user.uid, updatedUserData);
+      
+      if (saveSuccess) {
+        // Recalculate streak and progress only if save was successful
+        calculateStreak(updatedUserData.dailyTasks);
+        calculateWeeklyProgress(updatedUserData.dailyTasks);
+      } else {
+        // Revert UI changes if save failed
+        setDailyTasks(dailyTasks);
+        console.error('Failed to save task progress');
       }
-    };
-    
-    await saveUserData(user.uid, updatedUserData);
-    
-    // Recalculate streak and progress
-    calculateStreak(updatedUserData.dailyTasks);
-    calculateWeeklyProgress(updatedUserData.dailyTasks);
+    } catch (error) {
+      console.error('Error toggling task:', error);
+      // Revert UI changes on error
+      setDailyTasks(dailyTasks);
+    }
   };
 
   const getTotalPoints = () => {

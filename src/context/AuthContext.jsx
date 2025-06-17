@@ -68,7 +68,8 @@ export const AuthProvider = ({ children }) => {
         return {
           notes: [],
           diaryEntries: [],
-          photos: []
+          photos: [],
+          dailyTasks: {}
         };
       }
 
@@ -76,7 +77,8 @@ export const AuthProvider = ({ children }) => {
       return {
         notes: parsedData.notes || [],
         diaryEntries: parsedData.diaryEntries || [],
-        photos: parsedData.photos || []
+        photos: parsedData.photos || [],
+        dailyTasks: parsedData.dailyTasks || {}
       };
     } catch (error) {
       console.error('Error getting user data:', error);
@@ -84,7 +86,8 @@ export const AuthProvider = ({ children }) => {
       return {
         notes: [],
         diaryEntries: [],
-        photos: []
+        photos: [],
+        dailyTasks: {}
       };
     }
   };
@@ -120,7 +123,8 @@ export const AuthProvider = ({ children }) => {
       await saveUserData(userData.uid, {
         notes: [],
         diaryEntries: [],
-        photos: []
+        photos: [],
+        dailyTasks: {}
       });
       
       navigate('/');
